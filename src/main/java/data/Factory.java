@@ -8,13 +8,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
 
 public class Factory {
-    private static Random RAND = new Random(0);
 
+    /**
+     * Reads an Object from a JSON file.
+     *
+     * @param path the path of the JSON file
+     * @param valueType the class of the Object to read
+     * @param <T> the generic class
+     * @return the Object in the JSON file
+     */
     public static <T> T fromFile(String path, Class<T> valueType) {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -25,6 +29,12 @@ public class Factory {
         }
     }
 
+    /**
+     * Writes an Object in a JSON file.
+     *
+     * @param path the path of the JSON file
+     * @param toWrite the object to write
+     */
     public static void toFile(String path, Object toWrite) {
         ObjectMapper mapper = new ObjectMapper();
         try {
@@ -41,26 +51,13 @@ public class Factory {
         }
     }
 
-    private static void addFiles(List<File> list, File file, String fileType, boolean includeSubFolders) {
-        if(file.isDirectory() && includeSubFolders) {
-            for(File f : file.listFiles()) {
-                addFiles(list, f, fileType, true);
-            }
-        }
-        else if(file.getName().contains(fileType)) {
-            list.add(file);
-        }
-    }
-
-    public static File[] listAllFiles(String folderPath, String fileType, boolean includeSubFolders) {
-        List<File> list = new LinkedList<>();
-        File folder = new File(folderPath);
-        for(File f : folder.listFiles()) {
-            addFiles(list, f, fileType, includeSubFolders);
-        }
-        return list.toArray(new File[list.size()]);
-    }
-
+    /**
+     * Returns true if the array contains the value.
+     *
+     * @param array the array
+     * @param value the value
+     * @return true iff the array contains the value
+     */
     public static boolean contains(int[] array, int value) {
         for(int a : array) {
             if(a == value) {

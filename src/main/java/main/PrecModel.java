@@ -6,14 +6,11 @@
 package main;
 
 import alldifferentprec.AllDiffPrec;
-import alldifferentprec.AllDiffPrecImp;
+import alldifferentprec.AllDiffPrecMoreThanBc;
 import alldifferentprec.GreedyBoundSupport;
 import alldifferentprec.PropAllDiffPrec;
 import data.Factory;
 import data.PrecInstance;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.chocosolver.solver.Model;
@@ -23,26 +20,21 @@ import org.chocosolver.solver.constraints.Propagator;
 import org.chocosolver.solver.constraints.nary.alldifferent.PropAllDiffBC;
 import org.chocosolver.solver.constraints.nary.alldifferent.PropAllDiffInst;
 import org.chocosolver.solver.search.strategy.Search;
-import org.chocosolver.solver.search.strategy.selectors.values.IntDomainMin;
-import org.chocosolver.solver.search.strategy.selectors.variables.FirstFail;
 import org.chocosolver.solver.variables.IntVar;
 
 public class PrecModel {
     private final Model model;
-    private final IntVar[] vars;
-    private final IntVar obj;
 
     public PrecModel(PrecInstance instance, ConfigurationPrec configuration) {
         this.model = new Model();
-        vars = new IntVar[instance.getSize()];
+        IntVar[] vars = new IntVar[instance.getSize()];
         for(int k = 0; k < vars.length; k++) {
             vars[k] = model.intVar("vars["+k+"]", instance.getDomains()[k]);
         }
 
-        obj = model.intVar(
-            "obj",
-            Arrays.stream(vars).mapToInt(IntVar::getLB).min().getAsInt(),
-            Arrays.stream(vars).mapToInt(IntVar::getUB).max().getAsInt()
+        IntVar obj = model.intVar("obj",
+                                  Arrays.stream(vars).mapToInt(IntVar::getLB).min().getAsInt(),
+                                  Arrays.stream(vars).mapToInt(IntVar::getUB).max().getAsInt()
         );
         model.max(obj, vars).post();
         model.setObjective(false, obj);
@@ -62,9 +54,9 @@ public class PrecModel {
         } else if(configuration.equals(ConfigurationPrec.BESSIERE)) {
             list.add(new PropAllDiffPrec(vars, precedence, new AllDiffPrec(vars, precedence)));
         } else if(configuration.equals(ConfigurationPrec.GODET_BC)) {
-            list.add(new PropAllDiffPrec(vars, precedence, new AllDiffPrecImp(vars, precedence, false)));
+            list.add(new PropAllDiffPrec(vars, precedence, new AllDiffPrecMoreThanBc(vars, precedence, false)));
         } else if(configuration.equals(ConfigurationPrec.GODET_RC)) {
-            list.add(new PropAllDiffPrec(vars, precedence, new AllDiffPrecImp(vars, precedence, true)));
+            list.add(new PropAllDiffPrec(vars, precedence, new AllDiffPrecMoreThanBc(vars, precedence, true)));
         } else if(configuration.equals(ConfigurationPrec.GREEDY_BC)) {
             list.add(new PropAllDiffPrec(vars, precedence, new GreedyBoundSupport(vars, precedence, false)));
         } else if(configuration.equals(ConfigurationPrec.GREEDY_RC)) {
@@ -90,10 +82,6 @@ public class PrecModel {
         );
     }
 
-    public IntVar[] getVars() {
-        return vars;
-    }
-
     public Model getModel() {
         return model;
     }
@@ -109,10 +97,11 @@ public class PrecModel {
             + solver.getFailCount() + ";";
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         ConfigurationPrec configuration = ConfigurationPrec.valueOf(args[0]);
         long timeLimitInMilliseconds = Long.parseLong(args[1]) * 60000;
         PrecInstance instance = Factory.fromFile(args[2], PrecInstance.class);
+        assert instance != null;
         PrecModel precModel = new PrecModel(instance, configuration);
         Solver solver = precModel.getModel().getSolver();
 

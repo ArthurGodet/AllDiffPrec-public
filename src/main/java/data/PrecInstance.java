@@ -47,10 +47,20 @@ public class PrecInstance {
         return domains;
     }
 
+    /**
+     * Returns the ancestors matrix: ancestors[i][k] = j means that j is an ancestor of i.
+     *
+     * @return the ancestors matrix
+     */
     public int[][] getAncestors() {
         return ancestors;
     }
 
+    /**
+     * Returns the descendants matrix: descendants[i][k] = j means that j is a descendant of i.
+     *
+     * @return the descendants matrix
+     */
     public int[][] getDescendants() {
         return descendants;
     }
@@ -69,6 +79,17 @@ public class PrecInstance {
     private static final TIntArrayList tmp = new TIntArrayList();
     private static final TIntHashSet set = new TIntHashSet();
 
+    /**
+     * Generates an instance of the AllDiffPrec constraint with the given name and of the given size.
+     * The density parameter gives the domains' density of each variable, while probPrec indicates the probability
+     * such that i will precede j for each i < j.
+     *
+     * @param size the number of variables
+     * @param density the domains' density
+     * @param probPrec the probability of precedence
+     * @param name the name of the instance
+     * @return the instance
+     */
     public static PrecInstance generateDensityInstance(int size, int density, int probPrec, String name) {
         boolean hasSolution = false;
         int nbFails = 0;
